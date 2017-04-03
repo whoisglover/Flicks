@@ -21,6 +21,7 @@ class DetailViewController: UIViewController {
     
     var movie: NSDictionary?
     
+    @IBOutlet weak var scoreLabel: UILabel!
     
     
     override func viewDidLoad() {
@@ -31,6 +32,8 @@ class DetailViewController: UIViewController {
         if let movie = movie {
             let title = movie["title"] as? String
             let overview = movie["overview"] as? String
+            
+    
             
             titleLabel.text = title
             overviewLabel.text = overview
