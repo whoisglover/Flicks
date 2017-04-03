@@ -13,6 +13,7 @@ import PKHUD
 class MoviesViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
 
     @IBOutlet weak var moviesTableView: UITableView!
+    @IBOutlet weak var networkErrorLabel: UILabel!
     
     var movies: [NSDictionary]?
     var refreshControl: UIRefreshControl!
@@ -26,7 +27,7 @@ class MoviesViewController: UIViewController, UITableViewDelegate, UITableViewDa
         
         
         
-        
+        editLabelHeight(edit: true)
         refreshControl = UIRefreshControl()
         refreshControl.addTarget(self, action: #selector(fetchMovies), for: .valueChanged)
         moviesTableView.insertSubview(refreshControl, at: 0)
@@ -39,15 +40,23 @@ class MoviesViewController: UIViewController, UITableViewDelegate, UITableViewDa
     
     
     func fetchMovies() {
+        self.editLabelHeight(edit: true)
+        networkErrorLabel.isHidden = true
         PKHUD.sharedHUD.contentView = PKHUDProgressView()
         PKHUD.sharedHUD.show()
         print("here 2")
         let apiKey = "075435556d400d67b7e5482b24658ff8"
-        let url = URL(string: "http://api.themoviedb.org/3/movie/\(endpoint)?api_key=\(apiKey)")!
+        
+        
+        let url = URL(string: "http://api.themoviedb.org/3/movie/\(endpoint!)?api_key=\(apiKey)")!
         let request = URLRequest(url: url, cachePolicy: .reloadIgnoringLocalCacheData, timeoutInterval: 10)
         let session = URLSession(configuration: .default, delegate: nil, delegateQueue: OperationQueue.main)
         let task: URLSessionDataTask = session.dataTask(with: request) { (data: Data?, response: URLResponse?, error: Error?) in
             if let error = error {
+                self.networkErrorLabel.isHidden = false
+                self.editLabelHeight(edit: false)
+                self.refreshControl.endRefreshing()
+                PKHUD.sharedHUD.hide()
                 print("error from api response: \(error)")
             } else if let data = data,
                 let dataDictionary = try! JSONSerialization.jsonObject(with: data, options: []) as? NSDictionary {
@@ -90,6 +99,19 @@ class MoviesViewController: UIViewController, UITableViewDelegate, UITableViewDa
 //        cell.overviewLabel.sizeToFit()
         
         return cell
+    }
+    
+    func editLabelHeight(edit: Bool) {
+        if edit {
+            var labelFrame = networkErrorLabel.frame
+            labelFrame.size.height = 0
+            networkErrorLabel.frame = labelFrame
+        }
+        else {
+            var labelFrame = networkErrorLabel.frame
+            labelFrame.size.height = 44
+            networkErrorLabel.frame = labelFrame
+        }
     }
     
     
